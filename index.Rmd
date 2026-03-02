@@ -1,7 +1,7 @@
 ---
 title: "PS270 Final Project"
 author: "Cole Bakken"
-description: "My final project"
+description: "International Housing Prices and Working From Home"
 output:
   distill::distill_article:
     self_contained: false
@@ -9,6 +9,18 @@ output:
 
 
 
-## Project thoughts
+## Initial project thoughts
 
 I am interested in exploring data on welfare or housing policies and how they determine some outcome(s).
+
+## Updated project thoughts (Update 2)
+
+I am interested in using data from the International House Price Database from the Dallas Federal Reserve, and data from the Global Survey of Working Arrangements (G-SWA). The purpose of using these two data sets is to find how remote work is related to housing prices across countries. 
+
+My research question is: Do countries with more people working from home experience higher house price growth? 
+
+My hypothesis is that higher levels of remote work in a country will cause housing prices to be higher as well. The explanation I present for this is that an increase in remote work causes more of a demand for housing in certain areas. The explanatory variable is the percentage of workers in each country who report working from home, with the dependent variable being average housing price/housing price growth. My hypothesis would be supported if countries with higher levels of remote workers tend to show higher housing prices or a increased growth rate in housing prices (still unsure). The hypothesis would be challenged if there is no clear relationship or if countries with more remote work actually experience lower house price growth. 
+
+# Load initial data
+
+I am unsure how working with this data will work yet, as the housing price data is quarter by quarter, and the remote work data seems hard to obtain for every year. Additionally, I tried using head() to display the data from the excel file with no luck, but looked up some solutions and found some details about a package called 'fredr'. Please let me know if you know anything about this package or any more details about the federal reserves .xlsx files, thanks. I hope the lack of data doesn't take away from the rest of the proposal.
