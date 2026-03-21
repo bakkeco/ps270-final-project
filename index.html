@@ -116,7 +116,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--/radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-resource-manifest">
-  {"type":"character","attributes":{},"value":["data/hp2503.xlsx","index_files/anchor-4.2.2/anchor.min.js","index_files/bowser-1.9.3/bowser.min.js","index_files/distill-2.2.21/template.v2.js","index_files/header-attrs-2.17/header-attrs.js","index_files/header-attrs-2.30/header-attrs.js","index_files/jquery-3.6.0/jquery-3.6.0.js","index_files/jquery-3.6.0/jquery-3.6.0.min.js","index_files/jquery-3.6.0/jquery-3.6.0.min.map","index_files/popper-2.6.0/popper.min.js","index_files/tippy-6.2.7/tippy-bundle.umd.min.js","index_files/tippy-6.2.7/tippy-light-border.css","index_files/tippy-6.2.7/tippy.css","index_files/tippy-6.2.7/tippy.umd.min.js","index_files/webcomponents-2.0.0/webcomponents.js"]}
+  {"type":"character","attributes":{},"value":["data/G-SWA.xlsx","data/hp2503.xlsx","index_files/anchor-4.2.2/anchor.min.js","index_files/bowser-1.9.3/bowser.min.js","index_files/distill-2.2.21/template.v2.js","index_files/figure-html5/unnamed-chunk-6-1.png","index_files/header-attrs-2.17/header-attrs.js","index_files/header-attrs-2.30/header-attrs.js","index_files/jquery-3.6.0/jquery-3.6.0.js","index_files/jquery-3.6.0/jquery-3.6.0.min.js","index_files/jquery-3.6.0/jquery-3.6.0.min.map","index_files/popper-2.6.0/popper.min.js","index_files/tippy-6.2.7/tippy-bundle.umd.min.js","index_files/tippy-6.2.7/tippy-light-border.css","index_files/tippy-6.2.7/tippy.css","index_files/tippy-6.2.7/tippy.umd.min.js","index_files/webcomponents-2.0.0/webcomponents.js"]}
   </script>
   <!--radix_placeholder_navigation_in_header-->
   <!--/radix_placeholder_navigation_in_header-->
@@ -1544,15 +1544,136 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 </div>
 
 <div class="d-article">
-<h2 id="initial-project-thoughts">Initial project thoughts</h2>
-<p>I am interested in exploring data on welfare or housing policies and how they determine some outcome(s).</p>
-<h2 id="updated-project-thoughts-update-2">Updated project thoughts (Update 2)</h2>
-<p>I am interested in using data from the International House Price Database from the Dallas Federal Reserve, and data from the Global Survey of Working Arrangements (G-SWA). The purpose of using these two data sets is to find how remote work is related to housing prices across countries.</p>
-<p>My research question is: Do countries with more people working from home experience higher house price growth?</p>
-<p>My hypothesis is that higher levels of remote work in a country will cause housing prices to be higher as well. The explanation I present for this is that an increase in remote work causes more of a demand for housing in certain areas. The explanatory variable is the percentage of workers in each country who report working from home, with the dependent variable being average housing price/housing price growth. My hypothesis would be supported if countries with higher levels of remote workers tend to show higher housing prices or a increased growth rate in housing prices (still unsure). The hypothesis would be challenged if there is no clear relationship or if countries with more remote work actually experience lower house price growth.</p>
-<h1 id="load-initial-data">Load initial data</h1>
-<p>I am unsure how working with this data will work yet, as the housing price data is quarter by quarter, and the remote work data seems hard to obtain for every year. Additionally, I tried using head() to display the data from the excel file with no luck, but looked up some solutions and found some details about a package called ‘fredr’. Please let me know if you know anything about this package or any more details about the federal reserves .xlsx files, thanks. I hope the lack of data doesn’t take away from the rest of the proposal.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
+<h2 id="load-clean-housing-data">Load &amp; Clean Housing Data</h2>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://tidyverse.tidyverse.org'>tidyverse</a></span><span class='op'>)</span></span>
+<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://readxl.tidyverse.org'>readxl</a></span><span class='op'>)</span></span>
+<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://zoo.R-Forge.R-project.org/'>zoo</a></span><span class='op'>)</span></span></code></pre>
+</div>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>rhpi</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://readxl.tidyverse.org/reference/read_excel.html'>read_excel</a></span><span class='op'>(</span><span class='st'>"data/hp2503.xlsx"</span>, sheet <span class='op'>=</span> <span class='st'>"RHPI"</span><span class='op'>)</span></span></code></pre>
+</div>
+</div>
+<p>Here I deleted the first row of the data set, as it is an empty row in the excel file, as well as with the blank 28th column. I also renamed the 1st column to “Date”.</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>rhpi</span> <span class='op'>&lt;-</span> <span class='va'>rhpi</span><span class='op'>[</span><span class='op'>-</span><span class='fl'>1</span>, <span class='op'>]</span></span>
+<span><span class='va'>rhpi</span><span class='op'>$</span><span class='va'>`...28`</span> <span class='op'>&lt;-</span> <span class='cn'>NULL</span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>rhpi</span><span class='op'>)</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>]</span> <span class='op'>&lt;-</span> <span class='st'>"Date"</span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>rhpi</span><span class='op'>)</span></span></code></pre>
+</div>
+<pre><code># A tibble: 6 × 29
+  Date    Australia Belgium Canada Switzerland Germany Denmark Spain
+  &lt;chr&gt;       &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;       &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;
+1 1975:Q1      38.8    43.2   59.2        92.9    110.    57.6  89.7
+2 1975:Q2      38.2    44.3   58.9        90.9    110.    58.0  96.7
+3 1975:Q3      38.3    45.6   59.8        89.5    110.    59.4  95.2
+4 1975:Q4      37.5    47.2   59.3        88.0    110.    58.4  98.5
+5 1976:Q1      37.6    49.1   59.0        86.0    111.    59.0  96.5
+6 1976:Q2      37.9    50.7   59.8        85.0    112.    57.6 103. 
+# ℹ 21 more variables: Finland &lt;dbl&gt;, France &lt;dbl&gt;, UK &lt;dbl&gt;,
+#   Ireland &lt;dbl&gt;, Italy &lt;dbl&gt;, Japan &lt;dbl&gt;, `S. Korea` &lt;dbl&gt;,
+#   Luxembourg &lt;dbl&gt;, Netherlands &lt;dbl&gt;, Norway &lt;dbl&gt;,
+#   `New Zealand` &lt;dbl&gt;, Sweden &lt;dbl&gt;, US &lt;dbl&gt;, `S. Africa` &lt;dbl&gt;,
+#   Croatia &lt;dbl&gt;, Israel &lt;dbl&gt;, Slovenia &lt;dbl&gt;, Colombia &lt;dbl&gt;,
+#   Portugal &lt;dbl&gt;, `Aggregate - 2005 Fixed Weights` &lt;chr&gt;,
+#   `Aggregate - Dynamic Weights` &lt;chr&gt;</code></pre>
+</div>
+<p>The date format of this data is usual, and comes in the format of 1975:Q1, 1975:Q2. I saw a package online called “ihpdr” that already did the cleaning of the data, which I think would defeat the purpose of this project, but I noticed that the dates were changed to 1975-01-01, 1975-04-01, etc.</p>
+<p>After prompting AI, it recommended me to use the package “zoo” to work with the unusual time format for myself. The following code is written with the help of AI as I am unfamiliar how to work with zoo or clean data very well. It was also recommended to reshape the data longer (rather than wider as we have done in class)</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>rhpi</span><span class='op'>$</span><span class='va'>Date</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/zoo/man/yearqtr.html'>as.yearqtr</a></span><span class='op'>(</span><span class='va'>rhpi</span><span class='op'>$</span><span class='va'>Date</span>, format <span class='op'>=</span> <span class='st'>"%Y:Q%q"</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='va'>rhpi</span> <span class='op'>&lt;-</span> <span class='va'>rhpi</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/across.html'>across</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>Date</span>, <span class='va'>as.numeric</span><span class='op'>)</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>rhpi</span><span class='op'>)</span></span></code></pre>
+</div>
+<pre><code># A tibble: 6 × 29
+  Date      Australia Belgium Canada Switzerland Germany Denmark Spain
+  &lt;yearqtr&gt;     &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;       &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;
+1 1975 Q1        38.8    43.2   59.2        92.9    110.    57.6  89.7
+2 1975 Q2        38.2    44.3   58.9        90.9    110.    58.0  96.7
+3 1975 Q3        38.3    45.6   59.8        89.5    110.    59.4  95.2
+4 1975 Q4        37.5    47.2   59.3        88.0    110.    58.4  98.5
+5 1976 Q1        37.6    49.1   59.0        86.0    111.    59.0  96.5
+6 1976 Q2        37.9    50.7   59.8        85.0    112.    57.6 103. 
+# ℹ 21 more variables: Finland &lt;dbl&gt;, France &lt;dbl&gt;, UK &lt;dbl&gt;,
+#   Ireland &lt;dbl&gt;, Italy &lt;dbl&gt;, Japan &lt;dbl&gt;, `S. Korea` &lt;dbl&gt;,
+#   Luxembourg &lt;dbl&gt;, Netherlands &lt;dbl&gt;, Norway &lt;dbl&gt;,
+#   `New Zealand` &lt;dbl&gt;, Sweden &lt;dbl&gt;, US &lt;dbl&gt;, `S. Africa` &lt;dbl&gt;,
+#   Croatia &lt;dbl&gt;, Israel &lt;dbl&gt;, Slovenia &lt;dbl&gt;, Colombia &lt;dbl&gt;,
+#   Portugal &lt;dbl&gt;, `Aggregate - 2005 Fixed Weights` &lt;dbl&gt;,
+#   `Aggregate - Dynamic Weights` &lt;dbl&gt;</code></pre>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>rhpi_longer</span> <span class='op'>&lt;-</span> <span class='va'>rhpi</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='va'>Date</span>, <span class='va'>US</span>, <span class='va'>UK</span>, <span class='va'>Canada</span>, <span class='va'>Australia</span><span class='op'>)</span> <span class='op'>|&gt;</span> <span class='co'># this can be more countries or all later, but for this milestone, we will just use 4.</span></span>
+<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/pivot_longer.html'>pivot_longer</a></span><span class='op'>(</span></span>
+<span>    cols <span class='op'>=</span> <span class='op'>-</span><span class='va'>Date</span>,</span>
+<span>    names_to <span class='op'>=</span> <span class='st'>"Country"</span>,</span>
+<span>    values_to <span class='op'>=</span> <span class='st'>"RHPI"</span></span>
+<span>  <span class='op'>)</span></span>
+<span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>rhpi_longer</span><span class='op'>)</span></span></code></pre>
+</div>
+<pre><code># A tibble: 6 × 3
+  Date      Country    RHPI
+  &lt;yearqtr&gt; &lt;chr&gt;     &lt;dbl&gt;
+1 1975 Q1   US         54.0
+2 1975 Q1   UK         32.2
+3 1975 Q1   Canada     59.2
+4 1975 Q1   Australia  38.8
+5 1975 Q2   US         54.0
+6 1975 Q2   UK         31.2</code></pre>
+</div>
+<h2 id="data-visualization">Data Visualization</h2>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>rhpi_longer</span>, <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>Date</span>, y <span class='op'>=</span> <span class='va'>RHPI</span>, color <span class='op'>=</span> <span class='va'>Country</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span> <span class='op'>(</span></span>
+<span>    title <span class='op'>=</span> <span class='st'>"Real House Price Index Over Time"</span>,</span>
+<span>    x <span class='op'>=</span> <span class='st'>"Year"</span>,</span>
+<span>    y <span class='op'>=</span> <span class='st'>"Real House Price Index (RHPI)"</span>,</span>
+<span>    color <span class='op'>=</span> <span class='st'>"Country"</span></span>
+<span>  <span class='op'>)</span> </span></code></pre>
+</div>
+<p><img src="index_files/figure-html5/unnamed-chunk-6-1.png" alt="" width="624" /></p>
+</div>
+<p>The real house price index is “seasonally adjusted and re-based” so the year 2005 equals 100 (from the Fed’s Methodological Note). That means all countries being scaled to this reference point allows us to compare how house prices have changed over time across countries. As a result, the lines in the graph move relative to increases/decreases from the base value rather than representing raw price values.</p>
+<p>The graph shows that Canada has seemingly had the greatest increase in real house prices since 2005, and in Milestone 4, I would hope to use working from home data to see any associations between real housing prices and the rate of working from home. My hypothesis is that Canada would have the highest rate compared to the US or the UK, as they have lower real home prices.</p>
+<h2 id="load-work-from-home-data">Load Work From Home Data</h2>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>wfh</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://readxl.tidyverse.org/reference/read_excel.html'>read_excel</a></span><span class='op'>(</span><span class='st'>"data/G-SWA.xlsx"</span><span class='op'>)</span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>wfh</span><span class='op'>)</span></span></code></pre>
+</div>
+<pre><code># A tibble: 6 × 34
+  idnum original_country  wave country     originalcountry regionname
+  &lt;dbl&gt; &lt;chr&gt;            &lt;dbl&gt; &lt;chr&gt;                 &lt;dbl&gt; &lt;chr&gt;     
+1     1 Australia            1 Australia 1              27 Victoria  
+2     2 Australia            1 Australia 1              27 Queensland
+3     3 Australia            1 Australia 1              27 Victoria  
+4     4 Australia            1 Australia 1              27 Victoria  
+5     5 Australia            1 Australia 1              27 Victoria  
+6     6 Australia            1 Australia 1              27 Queensland
+# ℹ 28 more variables: gender &lt;chr&gt;, agegroups &lt;chr&gt;,
+#   education &lt;chr&gt;, industry_job &lt;chr&gt;, age &lt;dbl&gt;, tertiary &lt;dbl&gt;,
+#   graduate &lt;dbl&gt;, married &lt;dbl&gt;, male &lt;dbl&gt;, with_kids &lt;dbl&gt;,
+#   male_with_kids &lt;dbl&gt;, n_work_home &lt;dbl&gt;,
+#   daysemployer_work_home &lt;dbl&gt;, daysemployee_work_home &lt;dbl&gt;,
+#   value_WFH_rawpercent25 &lt;dbl&gt;, commuting_time &lt;dbl&gt;,
+#   WFH_expectations1 &lt;dbl&gt;, WFHperceptions &lt;dbl&gt;, …</code></pre>
+</div>
+<p>This data set has 36k obs. so it will take me a bit to figure out how to use it and filter it the best, but that is for future me! They also seem pretty adamant about citing the source of the data which will be provided here:</p>
+<p>Source: Aksoy, Cevat Giray, Jose Maria Barrero, Nicholas Bloom, Steven J. Davis, Mathias Dolls and Pablo Zarate, 2022. “Working from Home Around the World,” Brookings Papers on Economic Activity.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->
 </div>

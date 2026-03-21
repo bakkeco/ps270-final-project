@@ -7,20 +7,75 @@ output:
     self_contained: false
 ---
 
+## Load & Clean Housing Data
 
+```{r}
+library(tidyverse)
+library(readxl)
+library(zoo)
+```
 
-## Initial project thoughts
+```{r}
+rhpi <- read_excel("data/hp2503.xlsx", sheet = "RHPI")
+```
 
-I am interested in exploring data on welfare or housing policies and how they determine some outcome(s).
+Here I deleted the first row of the data set, as it is an empty row in the excel file, as well as with the blank 28th column. I also renamed the 1st column to "Date". 
 
-## Updated project thoughts (Update 2)
+```{r}
+rhpi <- rhpi[-1, ]
+rhpi$`...28` <- NULL
+names(rhpi)[1] <- "Date"
+head(rhpi)
+```
 
-I am interested in using data from the International House Price Database from the Dallas Federal Reserve, and data from the Global Survey of Working Arrangements (G-SWA). The purpose of using these two data sets is to find how remote work is related to housing prices across countries. 
+The date format of this data is usual, and comes in the format of 1975:Q1, 1975:Q2. I saw a package online called "ihpdr" that already did the cleaning of the data, which I think would defeat the purpose of this project, but I noticed that the dates were changed to 1975-01-01, 1975-04-01, etc. 
 
-My research question is: Do countries with more people working from home experience higher house price growth? 
+After prompting AI, it recommended me to use the package "zoo" to work with the unusual time format for myself. The following code is written with the help of AI as I am unfamiliar how to work with zoo or clean data very well. It was also recommended to reshape the data longer (rather than wider as we have done in class)
 
-My hypothesis is that higher levels of remote work in a country will cause housing prices to be higher as well. The explanation I present for this is that an increase in remote work causes more of a demand for housing in certain areas. The explanatory variable is the percentage of workers in each country who report working from home, with the dependent variable being average housing price/housing price growth. My hypothesis would be supported if countries with higher levels of remote workers tend to show higher housing prices or a increased growth rate in housing prices (still unsure). The hypothesis would be challenged if there is no clear relationship or if countries with more remote work actually experience lower house price growth. 
+```{r}
+rhpi$Date <- as.yearqtr(rhpi$Date, format = "%Y:Q%q")
 
-# Load initial data
+rhpi <- rhpi |>
+  mutate(across(-Date, as.numeric))
 
-I am unsure how working with this data will work yet, as the housing price data is quarter by quarter, and the remote work data seems hard to obtain for every year. Additionally, I tried using head() to display the data from the excel file with no luck, but looked up some solutions and found some details about a package called 'fredr'. Please let me know if you know anything about this package or any more details about the federal reserves .xlsx files, thanks. I hope the lack of data doesn't take away from the rest of the proposal.
+head(rhpi)
+```
+
+```{r}
+rhpi_longer <- rhpi |>
+  select(Date, US, UK, Canada, Australia) |> # this can be more countries or all later, but for this milestone, we will just use 4.
+  pivot_longer(
+    cols = -Date,
+    names_to = "Country",
+    values_to = "RHPI"
+  )
+
+head(rhpi_longer)
+```
+
+## Data Visualization
+
+```{r}
+ggplot(rhpi_longer, aes(x = Date, y = RHPI, color = Country)) +
+  geom_line() + 
+  labs (
+    title = "Real House Price Index Over Time",
+    x = "Year",
+    y = "Real House Price Index (RHPI)",
+    color = "Country"
+  ) 
+```
+The real house price index is "seasonally adjusted and re-based" so the year 2005 equals 100 (from the Fed's Methodological Note). That means all countries being scaled to this reference point allows us to compare how house prices have changed over time across countries. As a result, the lines in the graph move relative to increases/decreases from the base value rather than representing raw price values. 
+
+The graph shows that Canada has seemingly had the greatest increase in real house prices since 2005, and in Milestone 4, I would hope to use working from home data to see any associations between real housing prices and the rate of working from home. My hypothesis is that Canada would have the highest rate compared to the US or the UK, as they have lower real home prices. 
+
+## Load Work From Home Data
+
+```{r}
+wfh <- read_excel("data/G-SWA.xlsx")
+head(wfh)
+```
+
+This data set has 36k obs. so it will take me a bit to figure out how to use it and filter it the best, but that is for future me! This is data only from 2021-2022, and I don't believe I can access any more years. 
+
+Source: Aksoy, Cevat Giray, Jose Maria Barrero, Nicholas Bloom, Steven J. Davis, Mathias Dolls and Pablo Zarate, 2022. “Working from Home Around the World,” Brookings Papers on Economic Activity.
