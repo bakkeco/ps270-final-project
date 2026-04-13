@@ -116,7 +116,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--/radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-resource-manifest">
-  {"type":"character","attributes":{},"value":["data/G-SWA.xlsx","data/hp2503.xlsx","index_files/anchor-4.2.2/anchor.min.js","index_files/bowser-1.9.3/bowser.min.js","index_files/distill-2.2.21/template.v2.js","index_files/figure-html5/unnamed-chunk-6-1.png","index_files/header-attrs-2.17/header-attrs.js","index_files/header-attrs-2.30/header-attrs.js","index_files/jquery-3.6.0/jquery-3.6.0.js","index_files/jquery-3.6.0/jquery-3.6.0.min.js","index_files/jquery-3.6.0/jquery-3.6.0.min.map","index_files/popper-2.6.0/popper.min.js","index_files/tippy-6.2.7/tippy-bundle.umd.min.js","index_files/tippy-6.2.7/tippy-light-border.css","index_files/tippy-6.2.7/tippy.css","index_files/tippy-6.2.7/tippy.umd.min.js","index_files/webcomponents-2.0.0/webcomponents.js"]}
+  {"type":"character","attributes":{},"value":["data/G-SWA.xlsx","data/hp2503.xlsx","index_files/anchor-4.2.2/anchor.min.js","index_files/bowser-1.9.3/bowser.min.js","index_files/distill-2.2.21/template.v2.js","index_files/figure-html5/unnamed-chunk-13-1.png","index_files/figure-html5/unnamed-chunk-6-1.png","index_files/header-attrs-2.17/header-attrs.js","index_files/header-attrs-2.30/header-attrs.js","index_files/jquery-3.6.0/jquery-3.6.0.js","index_files/jquery-3.6.0/jquery-3.6.0.min.js","index_files/jquery-3.6.0/jquery-3.6.0.min.map","index_files/popper-2.6.0/popper.min.js","index_files/tippy-6.2.7/tippy-bundle.umd.min.js","index_files/tippy-6.2.7/tippy-light-border.css","index_files/tippy-6.2.7/tippy.css","index_files/tippy-6.2.7/tippy.umd.min.js","index_files/webcomponents-2.0.0/webcomponents.js"]}
   </script>
   <!--radix_placeholder_navigation_in_header-->
   <!--/radix_placeholder_navigation_in_header-->
@@ -1557,7 +1557,6 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>rhpi</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://readxl.tidyverse.org/reference/read_excel.html'>read_excel</a></span><span class='op'>(</span><span class='st'>"data/hp2503.xlsx"</span>, sheet <span class='op'>=</span> <span class='st'>"RHPI"</span><span class='op'>)</span></span></code></pre>
 </div>
 </div>
-<p>Here I deleted the first row of the data set, as it is an empty row in the excel file, as well as with the blank 28th column. I also renamed the 1st column to “Date”.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>rhpi</span> <span class='op'>&lt;-</span> <span class='va'>rhpi</span><span class='op'>[</span><span class='op'>-</span><span class='fl'>1</span>, <span class='op'>]</span></span>
@@ -1582,8 +1581,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 #   Portugal &lt;dbl&gt;, `Aggregate - 2005 Fixed Weights` &lt;chr&gt;,
 #   `Aggregate - Dynamic Weights` &lt;chr&gt;</code></pre>
 </div>
-<p>The date format of this data is usual, and comes in the format of 1975:Q1, 1975:Q2. I saw a package online called “ihpdr” that already did the cleaning of the data, which I think would defeat the purpose of this project, but I noticed that the dates were changed to 1975-01-01, 1975-04-01, etc.</p>
-<p>After prompting AI, it recommended me to use the package “zoo” to work with the unusual time format for myself. The following code is written with the help of AI as I am unfamiliar how to work with zoo or clean data very well. It was also recommended to reshape the data longer (rather than wider as we have done in class)</p>
+<p>Here I deleted the first row of the data set, as it is an empty row in the excel file, as well as with the blank 28th column. I also renamed the 1st column to “Date”.</p>
+<h2 id="changing-the-date-format-of-real-housing-data">Changing the Date Format of Real Housing Data</h2>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>rhpi</span><span class='op'>$</span><span class='va'>Date</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/zoo/man/yearqtr.html'>as.yearqtr</a></span><span class='op'>(</span><span class='va'>rhpi</span><span class='op'>$</span><span class='va'>Date</span>, format <span class='op'>=</span> <span class='st'>"%Y:Q%q"</span><span class='op'>)</span></span>
@@ -1613,7 +1612,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>rhpi_longer</span> <span class='op'>&lt;-</span> <span class='va'>rhpi</span> <span class='op'>|&gt;</span></span>
-<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='va'>Date</span>, <span class='va'>US</span>, <span class='va'>UK</span>, <span class='va'>Canada</span>, <span class='va'>Australia</span><span class='op'>)</span> <span class='op'>|&gt;</span> <span class='co'># this can be more countries or all later, but for this milestone, we will just use 4.</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='va'>Date</span>, <span class='va'>US</span>, <span class='va'>UK</span>, <span class='va'>Australia</span>, <span class='va'>France</span>, <span class='va'>Germany</span>, <span class='va'>Japan</span>, <span class='va'>Italy</span>, <span class='va'>Sweden</span>, <span class='va'>Spain</span>, <span class='va'>Canada</span><span class='op'>)</span> <span class='op'>|&gt;</span> </span>
 <span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/pivot_longer.html'>pivot_longer</a></span><span class='op'>(</span></span>
 <span>    cols <span class='op'>=</span> <span class='op'>-</span><span class='va'>Date</span>,</span>
 <span>    names_to <span class='op'>=</span> <span class='st'>"Country"</span>,</span>
@@ -1627,11 +1626,13 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   &lt;yearqtr&gt; &lt;chr&gt;     &lt;dbl&gt;
 1 1975 Q1   US         54.0
 2 1975 Q1   UK         32.2
-3 1975 Q1   Canada     59.2
-4 1975 Q1   Australia  38.8
-5 1975 Q2   US         54.0
-6 1975 Q2   UK         31.2</code></pre>
+3 1975 Q1   Australia  38.8
+4 1975 Q1   France     42.5
+5 1975 Q1   Germany   110. 
+6 1975 Q1   Japan     102. </code></pre>
 </div>
+<p>The date format of this data is usual, and comes in the format of 1975:Q1, 1975:Q2. I saw a package online called “ihpdr” that already did the cleaning of the data, which I think would defeat the purpose of this project, but I noticed that the dates were changed to 1975-01-01, 1975-04-01, etc.</p>
+<p>After prompting AI, it recommended me to use the package “zoo” to work with the unusual time format for myself. The following code is written with the help of AI as I am unfamiliar how to work with zoo or clean data very well. It was also recommended to reshape the data longer (rather than wider as we have done in class)</p>
 <h2 id="data-visualization">Data Visualization</h2>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
@@ -1649,31 +1650,122 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <p>The real house price index is “seasonally adjusted and re-based” so the year 2005 equals 100 (from the Fed’s Methodological Note). That means all countries being scaled to this reference point allows us to compare how house prices have changed over time across countries. As a result, the lines in the graph move relative to increases/decreases from the base value rather than representing raw price values.</p>
 <p>The graph shows that Canada has seemingly had the greatest increase in real house prices since 2005, and in Milestone 4, I would hope to use working from home data to see any associations between real housing prices and the rate of working from home. My hypothesis is that Canada would have the highest rate compared to the US or the UK, as they have lower real home prices.</p>
 <h2 id="load-work-from-home-data">Load Work From Home Data</h2>
+<p>Source: Aksoy, Cevat Giray, Jose Maria Barrero, Nicholas Bloom, Steven J. Davis, Mathias Dolls and Pablo Zarate, 2022. “Working from Home Around the World,” Brookings Papers on Economic Activity.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>wfh</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://readxl.tidyverse.org/reference/read_excel.html'>read_excel</a></span><span class='op'>(</span><span class='st'>"data/G-SWA.xlsx"</span><span class='op'>)</span></span>
-<span><span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>wfh</span><span class='op'>)</span></span></code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>wfh</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://readxl.tidyverse.org/reference/read_excel.html'>read_excel</a></span><span class='op'>(</span><span class='st'>"data/G-SWA.xlsx"</span><span class='op'>)</span></span></code></pre>
 </div>
-<pre><code># A tibble: 6 × 34
-  idnum original_country  wave country     originalcountry regionname
-  &lt;dbl&gt; &lt;chr&gt;            &lt;dbl&gt; &lt;chr&gt;                 &lt;dbl&gt; &lt;chr&gt;     
-1     1 Australia            1 Australia 1              27 Victoria  
-2     2 Australia            1 Australia 1              27 Queensland
-3     3 Australia            1 Australia 1              27 Victoria  
-4     4 Australia            1 Australia 1              27 Victoria  
-5     5 Australia            1 Australia 1              27 Victoria  
-6     6 Australia            1 Australia 1              27 Queensland
-# ℹ 28 more variables: gender &lt;chr&gt;, agegroups &lt;chr&gt;,
-#   education &lt;chr&gt;, industry_job &lt;chr&gt;, age &lt;dbl&gt;, tertiary &lt;dbl&gt;,
-#   graduate &lt;dbl&gt;, married &lt;dbl&gt;, male &lt;dbl&gt;, with_kids &lt;dbl&gt;,
-#   male_with_kids &lt;dbl&gt;, n_work_home &lt;dbl&gt;,
-#   daysemployer_work_home &lt;dbl&gt;, daysemployee_work_home &lt;dbl&gt;,
-#   value_WFH_rawpercent25 &lt;dbl&gt;, commuting_time &lt;dbl&gt;,
-#   WFH_expectations1 &lt;dbl&gt;, WFHperceptions &lt;dbl&gt;, …</code></pre>
 </div>
-<p>This data set has 36k obs. so it will take me a bit to figure out how to use it and filter it the best, but that is for future me! They also seem pretty adamant about citing the source of the data which will be provided here:</p>
-<p>Source: Aksoy, Cevat Giray, Jose Maria Barrero, Nicholas Bloom, Steven J. Davis, Mathias Dolls and Pablo Zarate, 2022. “Working from Home Around the World,” Brookings Papers on Economic Activity.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
+<h2 id="adding-year-to-working-from-home-data">Adding Year to Working From Home Data</h2>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>wfh</span> <span class='op'>&lt;-</span> <span class='va'>wfh</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>year <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/case_when.html'>case_when</a></span><span class='op'>(</span></span>
+<span>    <span class='va'>wave</span> <span class='op'>==</span> <span class='fl'>1</span> <span class='op'>~</span> <span class='fl'>2021</span>,</span>
+<span>    <span class='va'>wave</span> <span class='op'>==</span> <span class='fl'>2</span> <span class='op'>~</span> <span class='fl'>2022</span></span>
+<span>  <span class='op'>)</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/base/unique.html'>unique</a></span><span class='op'>(</span><span class='va'>wfh</span><span class='op'>$</span><span class='va'>country</span><span class='op'>)</span></span></code></pre>
+</div>
+<pre><code> [1] &quot;Australia 1&quot;   &quot;Australia 2&quot;   &quot;Austria 2&quot;     &quot;Brazil 2&quot;     
+ [5] &quot;Canada 2&quot;      &quot;China 1&quot;       &quot;China 2&quot;       &quot;Egypt 1&quot;      
+ [9] &quot;France 1&quot;      &quot;France 2&quot;      &quot;Germany 1&quot;     &quot;Germany 2&quot;    
+[13] &quot;Greece 1&quot;      &quot;Greece 2&quot;      &quot;Hungary 1&quot;     &quot;Hungary 2&quot;    
+[17] &quot;India 2&quot;       &quot;Italy 2&quot;       &quot;Japan 2&quot;       &quot;Korea 2&quot;      
+[21] &quot;Malaysia 2&quot;    &quot;Netherlands 1&quot; &quot;Netherlands 2&quot; &quot;Poland 1&quot;     
+[25] &quot;Poland 2&quot;      &quot;Russia 2&quot;      &quot;Serbia 1&quot;      &quot;Singapore 2&quot;  
+[29] &quot;Spain 2&quot;       &quot;Sweden 1&quot;      &quot;Sweden 2&quot;      &quot;Taiwan 2&quot;     
+[33] &quot;Turkey 1&quot;      &quot;Turkey 2&quot;      &quot;UK 1&quot;          &quot;UK 2&quot;         
+[37] &quot;USA 1&quot;         &quot;USA 2&quot;         &quot;Ukraine 1&quot;     &quot;Ukraine 2&quot;    </code></pre>
+</div>
+<h2 id="filtering-countries-down-matching-names">Filtering Countries Down &amp; Matching Names</h2>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>wfh_countries</span> <span class='op'>&lt;-</span> <span class='va'>wfh</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>original_country</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Australia"</span>, <span class='st'>"France"</span>, <span class='st'>"Germany"</span>, <span class='st'>"USA"</span>, <span class='st'>"UK"</span>, <span class='st'>"Japan"</span>, <span class='st'>"Italy"</span>, <span class='st'>"Sweden"</span>, <span class='st'>"Spain"</span>, <span class='st'>"Canada"</span><span class='op'>)</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='va'>wfh_countries</span> <span class='op'>&lt;-</span> <span class='va'>wfh_countries</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>original_country <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/case_when.html'>case_when</a></span><span class='op'>(</span></span>
+<span>    <span class='va'>original_country</span> <span class='op'>==</span> <span class='st'>"USA"</span> <span class='op'>~</span> <span class='st'>"US"</span>,</span>
+<span>    <span class='cn'>TRUE</span> <span class='op'>~</span> <span class='va'>original_country</span>                         <span class='co'>## This line will keep all the rest the same</span></span>
+<span>  <span class='op'>)</span><span class='op'>)</span></span></code></pre>
+</div>
+</div>
+<h2 id="average-days-working-from-home-by-year">Average Days Working From Home by Year</h2>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>wfh_countries_mean</span> <span class='op'>&lt;-</span> <span class='va'>wfh_countries</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>original_country</span>, <span class='va'>year</span><span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarize</a></span><span class='op'>(</span></span>
+<span>    wfh_mean <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>n_work_home</span>, na.rm <span class='op'>=</span> <span class='cn'>T</span><span class='op'>)</span>,</span>
+<span>   .groups <span class='op'>=</span> <span class='st'>"drop"</span> <span class='co'>## Tibble is still grouped by original_country otherwise </span></span>
+<span>   <span class='op'>)</span></span></code></pre>
+</div>
+</div>
+<h2 id="creating-a-yearly-real-housing-price-to-compare-with-wfh-data-then-filtering-by-202122">Creating a yearly Real Housing Price, to compare with WFH data, then filtering by 2021/22</h2>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>rhpi_yearly</span> <span class='op'>&lt;-</span> <span class='va'>rhpi_longer</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>year <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/numeric.html'>as.numeric</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/format.html'>format</a></span><span class='op'>(</span><span class='va'>Date</span>, <span class='st'>"%Y"</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>|&gt;</span> <span class='co'># Had to look up how to do this, don't believe it's Zoo, but base R</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>Country</span>, <span class='va'>year</span><span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarize</a></span><span class='op'>(</span></span>
+<span>    RHPI <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>RHPI</span>, na.rm <span class='op'>=</span> <span class='cn'>T</span>,</span>
+<span>    .groups <span class='op'>=</span> <span class='st'>"drop"</span></span>
+<span>    <span class='op'>)</span><span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>year</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>2021</span>, <span class='fl'>2022</span><span class='op'>)</span><span class='op'>)</span></span></code></pre>
+</div>
+</div>
+<h2 id="merge-the-data">MERGE THE DATA!</h2>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>merged_data</span> <span class='op'>&lt;-</span> <span class='va'>rhpi_yearly</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate-joins.html'>inner_join</a></span><span class='op'>(</span><span class='va'>wfh_countries_mean</span>, by <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Country"</span> <span class='op'>=</span> <span class='st'>"original_country"</span>, <span class='st'>"year"</span> <span class='op'>=</span> <span class='st'>"year"</span><span class='op'>)</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='va'>merged_data</span></span></code></pre>
+</div>
+<pre><code># A tibble: 16 × 4
+# Groups:   Country [10]
+   Country    year  RHPI wfh_mean
+   &lt;chr&gt;     &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;
+ 1 Australia  2021 174.      2.39
+ 2 Australia  2022 178.      2.38
+ 3 Canada     2022 244.      2.38
+ 4 France     2021 123.      1.18
+ 5 France     2022 125.      1.37
+ 6 Germany    2021 148.      1.47
+ 7 Germany    2022 147.      1.27
+ 8 Italy      2022  74.6     1.67
+ 9 Japan      2022  96.5     1.17
+10 Spain      2022  73.8     1.61
+11 Sweden     2021 204.      1.64
+12 Sweden     2022 201.      1.49
+13 UK         2021 124.      2.21
+14 UK         2022 125.      2.17
+15 US         2021 113.      1.73
+16 US         2022 123.      1.55</code></pre>
+</div>
+<h2 id="quick-visualization">Quick Visualization</h2>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>merged_data</span>, <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>wfh_mean</span>, y <span class='op'>=</span> <span class='va'>RHPI</span>, color <span class='op'>=</span> <span class='va'>Country</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span>size <span class='op'>=</span> <span class='fl'>1.9</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_path</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>group <span class='op'>=</span> <span class='va'>Country</span><span class='op'>)</span>, </span>
+<span>arrow <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grid/arrow.html'>arrow</a></span><span class='op'>(</span>type <span class='op'>=</span> <span class='st'>"open"</span>, length <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grid/unit.html'>unit</a></span><span class='op'>(</span><span class='fl'>0.09</span>, <span class='st'>"inches"</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_smooth.html'>geom_smooth</a></span><span class='op'>(</span>method <span class='op'>=</span> <span class='st'>"lm"</span>, se <span class='op'>=</span> <span class='cn'>T</span>, color <span class='op'>=</span> <span class='st'>"black"</span>, alpha <span class='op'>=</span> <span class='fl'>0.1</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/guides.html'>guides</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/guide_legend.html'>guide_legend</a></span><span class='op'>(</span>override.aes <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>linetype <span class='op'>=</span> <span class='fl'>0</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'>## The arrows were being added to the country guide on the right, this is to prevent that. </span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span></span>
+<span>    title <span class='op'>=</span> <span class='st'>"WFH vs Real Housing Prices (2021-2022)"</span>,</span>
+<span>    x <span class='op'>=</span> <span class='st'>"Average Days Worked From Home in a Week"</span>,</span>
+<span>    y <span class='op'>=</span> <span class='st'>"Real Housing Price Index (2005 Base Year)"</span>,</span>
+<span>    caption <span class='op'>=</span> <span class='st'>"Data: US Dallas Fed &amp; Brookings WFH Data"</span></span>
+<span>  <span class='op'>)</span></span></code></pre>
+</div>
+<p><img src="index_files/figure-html5/unnamed-chunk-13-1.png" alt="" width="624" /></p>
+</div>
+<p>The graph shows the relationship between the average days worked from home and the real housing price index across countries in 2021 and 2022. Each country is represented by one or two points, depending on available survey data. This allows for cross-country differences and yearly changes for some of the countries.</p>
+<p>There appears to be a positive relationship between working from home and housing prices, as indicated by the line of best fit, countries with higher levels of remote work like Canada and Australia tend to have higher real housing prices than the lower countries like Japan. However, there are some cases where from 2021 to 2022, housing prices increased despite working from home decreasing, showing that there are other factors influencing housing prices as well.</p>
+<p>The analysis is limited and a relatively short time frame. The results should be interpreted as descriptive rather than causal.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->
 </div>
