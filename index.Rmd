@@ -19,8 +19,6 @@ library(zoo)
 rhpi <- read_excel("data/hp2503.xlsx", sheet = "RHPI")
 ```
 
-Here I deleted the first row of the data set, as it is an empty row in the excel file, as well as with the blank 28th column. I also renamed the 1st column to "Date". 
-
 ```{r}
 rhpi <- rhpi[-1, ]
 rhpi$`...28` <- NULL
@@ -28,9 +26,11 @@ names(rhpi)[1] <- "Date"
 head(rhpi)
 ```
 
-The date format of this data is usual, and comes in the format of 1975:Q1, 1975:Q2. I saw a package online called "ihpdr" that already did the cleaning of the data, which I think would defeat the purpose of this project, but I noticed that the dates were changed to 1975-01-01, 1975-04-01, etc. 
+Here I deleted the first row of the data set, as it is an empty row in the excel file, as well as with the blank 28th column. I also renamed the 1st column to "Date". 
 
-After prompting AI, it recommended me to use the package "zoo" to work with the unusual time format for myself. The following code is written with the help of AI as I am unfamiliar how to work with zoo or clean data very well. It was also recommended to reshape the data longer (rather than wider as we have done in class)
+
+
+## Changing the Date Format of Real Housing Data
 
 ```{r}
 rhpi$Date <- as.yearqtr(rhpi$Date, format = "%Y:Q%q")
@@ -43,7 +43,7 @@ head(rhpi)
 
 ```{r}
 rhpi_longer <- rhpi |>
-  select(Date, US, UK, Canada, Australia) |> # this can be more countries or all later, but for this milestone, we will just use 4.
+  select(Date, US, UK, Australia, France, Germany, Japan, Italy, Sweden, Spain, Canada) |> 
   pivot_longer(
     cols = -Date,
     names_to = "Country",
@@ -52,6 +52,11 @@ rhpi_longer <- rhpi |>
 
 head(rhpi_longer)
 ```
+
+The date format of this data is usual, and comes in the format of 1975:Q1, 1975:Q2. I saw a package online called "ihpdr" that already did the cleaning of the data, which I think would defeat the purpose of this project, but I noticed that the dates were changed to 1975-01-01, 1975-04-01, etc. 
+
+After prompting AI, it recommended me to use the package "zoo" to work with the unusual time format for myself. The following code is written with the help of AI as I am unfamiliar how to work with zoo or clean data very well. It was also recommended to reshape the data longer (rather than wider as we have done in class)
+
 
 ## Data Visualization
 
@@ -71,11 +76,83 @@ The graph shows that Canada has seemingly had the greatest increase in real hous
 
 ## Load Work From Home Data
 
+Source: Aksoy, Cevat Giray, Jose Maria Barrero, Nicholas Bloom, Steven J. Davis, Mathias Dolls and Pablo Zarate, 2022. “Working from Home Around the World,” Brookings Papers on Economic Activity.
+
 ```{r}
 wfh <- read_excel("data/G-SWA.xlsx")
-head(wfh)
 ```
 
-This data set has 36k obs. so it will take me a bit to figure out how to use it and filter it the best, but that is for future me! This is data only from 2021-2022, and I don't believe I can access any more years. 
+## Adding Year to Working From Home Data
 
-Source: Aksoy, Cevat Giray, Jose Maria Barrero, Nicholas Bloom, Steven J. Davis, Mathias Dolls and Pablo Zarate, 2022. “Working from Home Around the World,” Brookings Papers on Economic Activity.
+```{r}
+wfh <- wfh |>
+  mutate(year = case_when(
+    wave == 1 ~ 2021,
+    wave == 2 ~ 2022
+  ))
+```
+
+## Filtering Countries Down & Matching Names
+
+```{r}
+wfh_countries <- wfh |>
+  filter(original_country %in% c("Australia", "France", "Germany", "USA", "UK", "Japan", "Italy", "Sweden", "Spain", "Canada"))
+
+wfh_countries <- wfh_countries |>
+  mutate(original_country = case_when(
+    original_country == "USA" ~ "US",
+    TRUE ~ original_country                         ## This line will keep all the rest the same
+  ))
+```
+
+## Average Days Working From Home by Year 
+
+```{r}
+wfh_countries_mean <- wfh_countries |>
+  group_by(original_country, year) |>
+  summarize(
+    wfh_mean = mean(n_work_home, na.rm = T),
+   .groups = "drop" ## Tibble is still grouped by original_country otherwise 
+   )
+```
+
+## Creating a yearly Real Housing Price, to compare with WFH data, then filtering by 2021/22
+```{r}
+rhpi_yearly <- rhpi_longer |>
+  mutate(year = as.numeric(format(Date, "%Y"))) |> # Had to look up how to do this, don't believe it's Zoo, but base R
+  group_by(Country, year) |>
+  summarize(
+    RHPI = mean(RHPI, na.rm = T,
+    .groups = "drop"
+    )) |>
+  filter(year %in% c(2021, 2022))
+```
+
+## MERGE THE DATA! 
+```{r}
+merged_data <- rhpi_yearly |>
+  inner_join(wfh_countries_mean, by = c("Country" = "original_country", "year" = "year"))
+
+merged_data
+```
+
+## Quick Visualization 
+```{r}
+ggplot(merged_data, aes(x = wfh_mean, y = RHPI, color = Country)) +
+  geom_point(size = 1.9) +
+  geom_path(aes(group = Country), 
+arrow = arrow(type = "open", length = unit(0.09, "inches"))) +
+  geom_smooth(method = "lm", se = T, color = "black", alpha = 0.1) +
+  guides(color = guide_legend(override.aes = list(linetype = 0))) + ## The arrows were being added to the country guide on the right, this is to prevent that. 
+  labs(
+    title = "WFH vs Real Housing Prices (2021-2022)",
+    x = "Average Days Worked From Home in a Week",
+    y = "Real Housing Price Index (2005 Base Year)",
+    caption = "Data: US Dallas Fed & Brookings WFH Data"
+  )
+```
+The graph shows the relationship between the average days worked from home and the real housing price index across countries in 2021 and 2022. Each country is represented by one or two points, depending on available survey data. This allows for cross-country differences and yearly changes for some of the countries.
+
+There appears to be a positive relationship between working from home and housing prices, as indicated by the line of best fit, countries with higher levels of remote work like Canada and Australia tend to have higher real housing prices than the lower countries like Japan. However, there are some cases where from 2021 to 2022, housing prices increased despite working from home decreasing, showing that there are other factors influencing housing prices as well. 
+
+The analysis is limited and a relatively short time frame. The results should be interpreted as descriptive rather than causal. 
