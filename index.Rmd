@@ -7,41 +7,39 @@ output:
     self_contained: false
 ---
 
-## Load & Clean Housing Data
+## Introduction
 
-```{r}
+This project examines the relationship between working from home and housing prices across several countries. Specifically, it asks whether higher levels of remote work are associated with higher real housing prices.
+
+This question is important because the rise of remote work may change how people choose where to live. If individuals are less tied to physical workplaces, they may demand larger homes or relocate to different areas, potentially driving up housing prices. I hypothesize that countries with higher levels of working from home will have higher housing prices, as increased flexibility in work location raises demand for housing. I also hypothesize that if current oil prices stay elevated, this may also drive demand for working from home long-term, as well. 
+
+The working from home data is sourced from: Aksoy, Cevat Giray, Jose Maria Barrero, Nicholas Bloom, Steven J. Davis, Mathias Dolls and Pablo Zarate, 2022. “Working from Home Around the World,” Brookings Papers on Economic Activity. Real Housing Prices are sourced from the Federal Reserve Bank of Dallas. 
+
+```{r, echo = FALSE}
 library(tidyverse)
 library(readxl)
 library(zoo)
+library(knitr)
 ```
 
-```{r}
+```{r, echo= FALSE}
 rhpi <- read_excel("data/hp2503.xlsx", sheet = "RHPI")
 ```
 
-```{r}
+```{r, echo = FALSE}
 rhpi <- rhpi[-1, ]
 rhpi$`...28` <- NULL
 names(rhpi)[1] <- "Date"
-head(rhpi)
 ```
 
-Here I deleted the first row of the data set, as it is an empty row in the excel file, as well as with the blank 28th column. I also renamed the 1st column to "Date". 
-
-
-
-## Changing the Date Format of Real Housing Data
-
-```{r}
+```{r , echo = FALSE}
 rhpi$Date <- as.yearqtr(rhpi$Date, format = "%Y:Q%q")
 
 rhpi <- rhpi |>
   mutate(across(-Date, as.numeric))
-
-head(rhpi)
 ```
 
-```{r}
+```{r , echo = FALSE}
 rhpi_longer <- rhpi |>
   select(Date, US, UK, Australia, France, Germany, Japan, Italy, Sweden, Spain, Canada) |> 
   pivot_longer(
@@ -49,18 +47,11 @@ rhpi_longer <- rhpi |>
     names_to = "Country",
     values_to = "RHPI"
   )
-
-head(rhpi_longer)
 ```
-
-The date format of this data is usual, and comes in the format of 1975:Q1, 1975:Q2. I saw a package online called "ihpdr" that already did the cleaning of the data, which I think would defeat the purpose of this project, but I noticed that the dates were changed to 1975-01-01, 1975-04-01, etc. 
-
-After prompting AI, it recommended me to use the package "zoo" to work with the unusual time format for myself. The following code is written with the help of AI as I am unfamiliar how to work with zoo or clean data very well. It was also recommended to reshape the data longer (rather than wider as we have done in class)
-
 
 ## Data Visualization
 
-```{r}
+```{r, echo = F}
 ggplot(rhpi_longer, aes(x = Date, y = RHPI, color = Country)) +
   geom_line() + 
   labs (
@@ -72,19 +63,15 @@ ggplot(rhpi_longer, aes(x = Date, y = RHPI, color = Country)) +
 ```
 The real house price index is "seasonally adjusted and re-based" so the year 2005 equals 100 (from the Fed's Methodological Note). That means all countries being scaled to this reference point allows us to compare how house prices have changed over time across countries. As a result, the lines in the graph move relative to increases/decreases from the base value rather than representing raw price values. 
 
-The graph shows that Canada has seemingly had the greatest increase in real house prices since 2005, and in Milestone 4, I would hope to use working from home data to see any associations between real housing prices and the rate of working from home. My hypothesis is that Canada would have the highest rate compared to the US or the UK, as they have lower real home prices. 
+The graph shows that Canada has seemingly had the greatest increase in real house prices since 2000 while some countries experience much lower price levels. This variation suggests that there is meaningful cross-country difference in the dependent variable, which is important for testing the hypothesis of WFH's impact.
 
-## Load Work From Home Data
+To evaluate the hypothesis, I examine whether there is a positive relationship between working from home and real housing prices. Evidence supporting the hypothesis would consist of a positive association between the average number of days worked from home and the real housing price index. In the regression analysis, this would correspond to a positive coefficient on the working-from-home variable. If the coefficient is close to zero or negative, this would provide evidence against the hypothesis.
 
-Source: Aksoy, Cevat Giray, Jose Maria Barrero, Nicholas Bloom, Steven J. Davis, Mathias Dolls and Pablo Zarate, 2022. “Working from Home Around the World,” Brookings Papers on Economic Activity.
-
-```{r}
+```{r, echo = FALSE}
 wfh <- read_excel("data/G-SWA.xlsx")
 ```
 
-## Adding Year to Working From Home Data
-
-```{r}
+```{r, echo = FALSE}
 wfh <- wfh |>
   mutate(year = case_when(
     wave == 1 ~ 2021,
@@ -92,22 +79,18 @@ wfh <- wfh |>
   ))
 ```
 
-## Filtering Countries Down & Matching Names
-
-```{r}
+```{r, echo = FALSE}
 wfh_countries <- wfh |>
   filter(original_country %in% c("Australia", "France", "Germany", "USA", "UK", "Japan", "Italy", "Sweden", "Spain", "Canada"))
 
 wfh_countries <- wfh_countries |>
   mutate(original_country = case_when(
     original_country == "USA" ~ "US",
-    TRUE ~ original_country                         ## This line will keep all the rest the same
+    TRUE ~ original_country  ## This line will keep all the rest the same
   ))
 ```
 
-## Average Days Working From Home by Year 
-
-```{r}
+```{r, echo = FALSE}
 wfh_countries_mean <- wfh_countries |>
   group_by(original_country, year) |>
   summarize(
@@ -116,8 +99,7 @@ wfh_countries_mean <- wfh_countries |>
    )
 ```
 
-## Creating a yearly Real Housing Price, to compare with WFH data, then filtering by 2021/22
-```{r}
+```{r, echo = FALSE}
 rhpi_yearly <- rhpi_longer |>
   mutate(year = as.numeric(format(Date, "%Y"))) |> # Had to look up how to do this, don't believe it's Zoo, but base R
   group_by(Country, year) |>
@@ -128,16 +110,13 @@ rhpi_yearly <- rhpi_longer |>
   filter(year %in% c(2021, 2022))
 ```
 
-## MERGE THE DATA! 
-```{r}
+```{r, echo = FALSE} 
 merged_data <- rhpi_yearly |>
   inner_join(wfh_countries_mean, by = c("Country" = "original_country", "year" = "year"))
-
-merged_data
 ```
 
-## Quick Visualization 
-```{r}
+## Result Visualization 
+```{r, echo = FALSE}
 ggplot(merged_data, aes(x = wfh_mean, y = RHPI, color = Country)) +
   geom_point(size = 1.9) +
   geom_path(aes(group = Country), 
@@ -151,8 +130,26 @@ arrow = arrow(type = "open", length = unit(0.09, "inches"))) +
     caption = "Data: US Dallas Fed & Brookings WFH Data"
   )
 ```
-The graph shows the relationship between the average days worked from home and the real housing price index across countries in 2021 and 2022. Each country is represented by one or two points, depending on available survey data. This allows for cross-country differences and yearly changes for some of the countries.
+The graph shows the relationship between the average days worked from home and the real housing price index across countries in 2021 and 2022. Each country is represented by one or two points, depending on available survey data. This allows for cross-country differences and yearly changes for some of the countries. The plot shows a generally positive relationship between working from home and real housing prices across countries in 2021–2022, as indicated by the upward-sloping regression line. Countries with higher average days worked from home tend to have higher values of the real house price index (RHPI), although there is substantial variation around this trend.
 
-There appears to be a positive relationship between working from home and housing prices, as indicated by the line of best fit, countries with higher levels of remote work like Canada and Australia tend to have higher real housing prices than the lower countries like Japan. However, there are some cases where from 2021 to 2022, housing prices increased despite working from home decreasing, showing that there are other factors influencing housing prices as well. 
+## Regression Analysis 
+```{r, echo = FALSE}
+regression <- lm(RHPI ~ wfh_mean + factor(year), data = merged_data)
 
-The analysis is limited and a relatively short time frame. The results should be interpreted as descriptive rather than causal. 
+library(broom)
+
+kable(
+  tidy(regression), ## tidy(), and broom to turn it into a table was suggested when promting AI after I had difficulties using model summary
+  digits = 3,
+  col.names = c("Term", "Estimate", "Std. Error", "t value", "p-value"))
+```
+
+The regression results reinforce the plot's findings but indicate that the relationship is not statistically strong. The coefficient on working from home is positive (44.408), meaning that an increase of one additional day worked from home per week is associated with an increase of about 44 points in the RHPI, holding year constant. However, this estimate is not statistically significant (p = 0.13), meaning we cannot rule out that the observed relationship is due to random chance in the sample. The coefficient on the year indicator suggests that housing prices were slightly lower in 2022 compared to 2021, but this effect is very small and highly insignificant (p = 0.80). We should not take a causal interpretation of the results.
+
+## Conclusion
+
+Overall, this data analysis project provides limited support for the hypothesis that higher levels of working from home are associated with higher housing prices. While both the graph and regression results suggest a positive relationship, the estimated effect is not statistically significant and the model explains only a small portion of the variation in housing prices. There are several limitations to the analysis, including the very small sample size, the short time period, and the omission of important (possibly confounding) variables such as interest rates, income levels, and housing supply conditions, etc. 
+
+Thus, we cannot take a causal interpretation of the results. 
+
+With more time and money, the analysis could be improved by incorporating additional years, expanding the set of control variables as mentioned above, or the usage of different methods, instead of relying on survey data alone for WFH data. 
